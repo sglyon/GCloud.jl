@@ -126,8 +126,8 @@ function instance(name::String)
 end
 
 function create_instance()
-    name = input("Instance name: ")
 
+    name = input("Instance name: ")
     # for now let google handle the rest with their own menus (will just have
     # to pick zone)
     run(`gcloud compute instances create $name`)
@@ -161,10 +161,10 @@ function create_instance(name::String,
 end
 
 function create_instance(name::String,
-                                      m_type::String,
-                                      zone::String,
-                                      project::String,
-                                      image::String)
+                         m_type::String,
+                         zone::String,
+                         project::String,
+                         image::String)
     # construct command
     cmd = `gcloud compute instances create $name --zone $zone
            --machine-type $m_type
@@ -218,9 +218,13 @@ function external_ip(name::String)
 end
 
 
-function addprocs(i::Instance, username::String, dir::String, n::Int=1)
+function addprocs(i::Instance, dir::String,
+                  username::String=readchomp(`whoami`); n::Int=1)
     ip = external_ip(i)
-    addprocs(repmat(["$(username)@$(ip)"], n), tunnel=true, dir=dir)
+    # for some reason I have to do it in a loop or ssh borks with high n
+    for i=1:n
+        addprocs(["$(username)@$(ip)"], tunnel=true, dir=dir)
+    end
     nothing
 end
 
